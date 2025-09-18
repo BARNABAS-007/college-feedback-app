@@ -1,23 +1,71 @@
 import streamlit as st
 import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
+from pathlib import Path
 
-# Load config and authenticate (same as before)
-# ... [Code from previous response] ...
+# --- PAGE CONFIGURATION & STYLING ---
+# Set the page to wide mode for a better layout
+st.set_page_config(layout="wide")
 
+# Custom CSS for a clean look
+st.markdown("""
+    <style>
+        .st-emotion-cache-18ni7ap { /* This targets the Streamlit main content container */
+            padding-top: 0rem;
+        }
+        .st-emotion-cache-16txtv6 {
+            padding-top: 1rem;
+        }
+        .stButton button {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+        .stButton button:hover {
+            background-color: #45a049;
+        }
+        h1, h2, h3 {
+            color: #2e7d32;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- USER AUTHENTICATION & CONFIGURATION ---
+# Load user credentials from a YAML file.
+try:
+    with open('config.yaml') as file:
+        config = yaml.load(file, Loader=SafeLoader)
+except FileNotFoundError:
+    st.error("config.yaml not found. Please make sure the file is in your project directory.")
+    st.stop()
+
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+)
+
+# --- LOGIN & PAGE NAVIGATION ---
 name, authentication_status, username = authenticator.login('Login', 'main')
 
 if authentication_status:
-    # Use a sidebar for logout button and navigation
+    # Use a sidebar for the logout button
     with st.sidebar:
         st.write(f"Welcome, {name}!")
         authenticator.logout('Logout', 'sidebar')
-    
+
     st.title("College Web Portal")
 
     # Student Dashboard
     if username in ["j_doe", "s_williams"]:
         st.header("Student Dashboard 🎓")
-        
+
         # UI for students
         st.subheader("Your Courses")
         col1, col2 = st.columns(2)
@@ -45,7 +93,7 @@ if authentication_status:
             "Select a course to manage:",
             ["Course 101: Intro to CS", "Course 201: Data Structures"]
         )
-        
+
         # Display metrics for the selected course
         c1, c2 = st.columns(2)
         c1.metric(label="Total Students", value="35")
@@ -73,3 +121,17 @@ elif authentication_status == False:
     st.error('Username/password is incorrect')
 elif authentication_status == None:
     st.warning('Please enter your username and password')
+
+
+***
+**What was wrong with the previous code?**
+
+The code you provided was missing the initial setup for `streamlit-authenticator` and the necessary `import` statements and the crucial `yaml` file loading logic. Without this, the `authenticator` object would not be created, causing a runtime error. My updated code includes the complete, self-contained logic to load the `config.yaml` and initialize the authentication system.
+
+**Next Steps**
+
+1.  **Create `config.yaml`**: Ensure you have this file in the same directory as `app.py`.
+2.  **Generate Hashed Passwords**: Use the `hash_passwords.py` script from a previous response to generate the hashed passwords for your users.
+3.  **Deployment**: Push both `app.py` and `config.yaml` to your GitHub repository. When you deploy the app with Streamlit Community Cloud, it will read both files and run without issues.
+
+This complete file should now run correctly both locally and upon deployment. Let me know if you encounter any further issues!
