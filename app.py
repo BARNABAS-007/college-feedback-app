@@ -2,16 +2,15 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+import os
 
 # --- PAGE CONFIGURATION & STYLING ---
-# Set the page to wide mode for a better layout
 st.set_page_config(layout="wide")
 
-# Custom CSS for a more attractive and clean look
 st.markdown("""
     <style>
         .stApp {
-            background-color: #f0f2f6; /* A light grey background for a clean look */
+            background-color: #f0f2f6;
         }
         .main-container {
             background-color: white;
@@ -39,11 +38,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- USER AUTHENTICATION & CONFIGURATION ---
+# Check if config.yaml exists before trying to open it
+config_path = 'config.yaml'
+if not os.path.exists(config_path):
+    st.error("`config.yaml` not found. Please make sure the file is in your project directory.")
+    st.stop()
+
 try:
-    with open('config.yaml') as file:
+    with open(config_path) as file:
         config = yaml.load(file, Loader=SafeLoader)
-except FileNotFoundError:
-    st.error("config.yaml not found. Please make sure the file is in your project directory.")
+except Exception as e:
+    st.error(f"Error loading `config.yaml`: {e}. Please check the file format.")
     st.stop()
 
 authenticator = stauth.Authenticate(
@@ -54,25 +59,31 @@ authenticator = stauth.Authenticate(
 )
 
 # --- LOGIN & APPLICATION LOGIC ---
-name, authentication_status, username = authenticator.login('Login', 'main')
+if 'authentication_status' not in st.session_state:
+    st.session_state['authentication_status'] = None
 
-if authentication_status == False:
+if st.session_state["authentication_status"] is False:
     st.error('Username/password is incorrect')
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
-elif authentication_status:
+
+if st.session_state["authentication_status"] is None:
+    # Display login form on the main page
+    name, authentication_status, username = authenticator.login('Login', 'main')
+    st.session_state['authentication_status'] = authentication_status
+    st.session_state['name'] = name
+    st.session_state['username'] = username
+
+if st.session_state["authentication_status"]:
     # This block runs only when a user is authenticated
     with st.sidebar:
-        st.write(f"Welcome, **{name}**!")
+        st.write(f"Welcome, **{st.session_state['name']}**!")
         authenticator.logout('Logout', 'sidebar')
 
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
     st.title("College Web Portal")
 
     # Student Dashboard
-    if username in ["j_doe", "s_williams"]:
+    if st.session_state['username'] in ["j_doe", "s_williams"]:
         st.header("Student Dashboard 🎓")
-
         st.subheader("Your Courses")
         col1, col2 = st.columns(2)
         with col1:
@@ -81,7 +92,6 @@ elif authentication_status:
         with col2:
             st.info("💡 **Course 201: Data Structures**\n\nLecturer: Jane Doe")
             st.progress(0.40, text="Progress: 40%")
-
         st.subheader("Upcoming Assignments")
         with st.expander("Click to see your assignments"):
             st.dataframe({
@@ -91,19 +101,16 @@ elif authentication_status:
             })
 
     # Lecturer Dashboard
-    elif username == "a_smith":
+    elif st.session_state['username'] == "a_smith":
         st.header("Lecturer Dashboard 🧑‍🏫")
-
         st.subheader("Course Management")
         selected_course = st.selectbox(
             "Select a course to manage:",
             ["Course 101: Intro to CS", "Course 201: Data Structures"]
         )
-
         c1, c2 = st.columns(2)
         c1.metric(label="Total Students", value="35")
         c2.metric(label="Average Grade", value="B+")
-
         st.subheader("Student Grades")
         student_data = {
             'Student Name': ['John Doe', 'Sally Williams'],
@@ -112,7 +119,6 @@ elif authentication_status:
             'Final Grade': ['A-', 'B+']
         }
         st.dataframe(student_data)
-
         st.subheader("Upload Materials")
         with st.form("upload_form"):
             file = st.file_uploader("Upload a file for your students:")
