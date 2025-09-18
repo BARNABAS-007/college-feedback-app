@@ -2,20 +2,21 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
-from pathlib import Path
 
 # --- PAGE CONFIGURATION & STYLING ---
-# Set the page to wide mode for a better layout
 st.set_page_config(layout="wide")
 
-# Custom CSS for a clean look
+# Custom CSS for a more attractive and clean look
 st.markdown("""
     <style>
-        .st-emotion-cache-18ni7ap { /* This targets the Streamlit main content container */
-            padding-top: 0rem;
+        .stApp {
+            background-color: #f0f2f6; /* A light grey background for a clean look */
         }
-        .st-emotion-cache-16txtv6 {
-            padding-top: 1rem;
+        .main-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .stButton button {
             background-color: #4CAF50;
@@ -52,21 +53,24 @@ authenticator = stauth.Authenticate(
 )
 
 # --- LOGIN & PAGE NAVIGATION ---
+# Attempt to log in the user
 name, authentication_status, username = authenticator.login('Login', 'main')
 
+# Handle authentication results
 if authentication_status:
-    # Use a sidebar for the logout button
+    # Use a sidebar for the logout button and welcome message
     with st.sidebar:
-        st.write(f"Welcome, {name}!")
+        st.write(f"Welcome, **{name}**!")
         authenticator.logout('Logout', 'sidebar')
 
+    # Main content container
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
     st.title("College Web Portal")
 
     # Student Dashboard
     if username in ["j_doe", "s_williams"]:
         st.header("Student Dashboard 🎓")
 
-        # UI for students
         st.subheader("Your Courses")
         col1, col2 = st.columns(2)
         with col1:
@@ -94,13 +98,11 @@ if authentication_status:
             ["Course 101: Intro to CS", "Course 201: Data Structures"]
         )
 
-        # Display metrics for the selected course
         c1, c2 = st.columns(2)
         c1.metric(label="Total Students", value="35")
         c2.metric(label="Average Grade", value="B+")
 
         st.subheader("Student Grades")
-        # Example data for a dataframe
         student_data = {
             'Student Name': ['John Doe', 'Sally Williams'],
             'Student ID': ['12345', '67890'],
@@ -113,11 +115,11 @@ if authentication_status:
         with st.form("upload_form"):
             file = st.file_uploader("Upload a file for your students:")
             st.form_submit_button("Upload File")
-
-    else:
-        st.warning("You do not have a defined role. Please contact support.")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 elif authentication_status == False:
     st.error('Username/password is incorrect')
 elif authentication_status == None:
     st.warning('Please enter your username and password')
+
