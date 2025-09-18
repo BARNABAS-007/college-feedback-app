@@ -1,0 +1,19 @@
+cookie:
+  expiry_days: 30
+  key: random_signature_key
+  name: college_web_app
+
+credentials:
+  usernames:
+    a_smith:
+      email: smith@college.edu
+      name: Alex Smith
+      password: <hashed_password_for_smith>
+    j_doe:
+      email: doe@student.edu
+      name: John Doe
+      password: <hashed_password_for_doe>
+    s_williams:
+      email: williams@student.edu
+      name: Sally Williams
+      password: <hashed_password_for_williams>
