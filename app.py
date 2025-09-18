@@ -4,6 +4,7 @@ import yaml
 from yaml.loader import SafeLoader
 
 # --- PAGE CONFIGURATION & STYLING ---
+# Set the page to wide mode for a better layout
 st.set_page_config(layout="wide")
 
 # Custom CSS for a more attractive and clean look
@@ -17,6 +18,7 @@ st.markdown("""
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
         }
         .stButton button {
             background-color: #4CAF50;
@@ -37,7 +39,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- USER AUTHENTICATION & CONFIGURATION ---
-# Load user credentials from a YAML file.
 try:
     with open('config.yaml') as file:
         config = yaml.load(file, Loader=SafeLoader)
@@ -52,18 +53,19 @@ authenticator = stauth.Authenticate(
     config['cookie']['expiry_days'],
 )
 
-# --- LOGIN & PAGE NAVIGATION ---
-# Attempt to log in the user
+# --- LOGIN & APPLICATION LOGIC ---
 name, authentication_status, username = authenticator.login('Login', 'main')
 
-# Handle authentication results
-if authentication_status:
-    # Use a sidebar for the logout button and welcome message
+if authentication_status == False:
+    st.error('Username/password is incorrect')
+elif authentication_status == None:
+    st.warning('Please enter your username and password')
+elif authentication_status:
+    # This block runs only when a user is authenticated
     with st.sidebar:
         st.write(f"Welcome, **{name}**!")
         authenticator.logout('Logout', 'sidebar')
 
-    # Main content container
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
     st.title("College Web Portal")
 
@@ -117,9 +119,3 @@ if authentication_status:
             st.form_submit_button("Upload File")
     
     st.markdown('</div>', unsafe_allow_html=True)
-
-elif authentication_status == False:
-    st.error('Username/password is incorrect')
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
-
