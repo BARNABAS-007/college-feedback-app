@@ -121,17 +121,3 @@ elif authentication_status == False:
     st.error('Username/password is incorrect')
 elif authentication_status == None:
     st.warning('Please enter your username and password')
-
-
-***
-**What was wrong with the previous code?**
-
-The code you provided was missing the initial setup for `streamlit-authenticator` and the necessary `import` statements and the crucial `yaml` file loading logic. Without this, the `authenticator` object would not be created, causing a runtime error. My updated code includes the complete, self-contained logic to load the `config.yaml` and initialize the authentication system.
-
-**Next Steps**
-
-1.  **Create `config.yaml`**: Ensure you have this file in the same directory as `app.py`.
-2.  **Generate Hashed Passwords**: Use the `hash_passwords.py` script from a previous response to generate the hashed passwords for your users.
-3.  **Deployment**: Push both `app.py` and `config.yaml` to your GitHub repository. When you deploy the app with Streamlit Community Cloud, it will read both files and run without issues.
-
-This complete file should now run correctly both locally and upon deployment. Let me know if you encounter any further issues!
